@@ -7,15 +7,15 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const getExplanation = async (question: string, options: string[], correctOption: string, userOption: string): Promise<string> => {
   try {
     const prompt = `
-      Actúa como un profesor experto de autoescuela en España.
-      El alumno ha respondido a una pregunta de test de la DGT.
+      Actúa como Skily, una IA avanzada de instrucción vial.
+      El piloto (alumno) ha respondido a una pregunta de test DGT.
       
       Pregunta: "${question}"
       Opciones: ${JSON.stringify(options)}
       Respuesta Correcta: "${correctOption}"
-      Respuesta del Alumno: "${userOption}"
+      Respuesta del Piloto: "${userOption}"
 
-      Proporciona una explicación breve, amable pero rigurosa (máximo 3 frases) de por qué la respuesta correcta es la que es, y por qué la del alumno es incorrecta (si falló). Cita la normativa general si aplica.
+      Proporciona una explicación técnica pero accesible. Sé breve (máximo 3 frases). Usa un tono profesional y motivador ("Atención piloto...", "Correcto, el reglamento indica...").
     `;
 
     const response = await ai.models.generateContent({
@@ -26,10 +26,10 @@ export const getExplanation = async (question: string, options: string[], correc
       }
     });
 
-    return response.text || "No se pudo generar una explicación en este momento.";
+    return response.text || "Datos de explicación no disponibles.";
   } catch (error) {
     console.error("Error fetching explanation:", error);
-    return "Lo siento, el profesor virtual no está disponible ahora mismo.";
+    return "Error de conexión con la base de datos central.";
   }
 };
 
@@ -39,13 +39,13 @@ export const askTutor = async (query: string): Promise<string> => {
       model: 'gemini-2.5-flash',
       contents: query,
       config: {
-        systemInstruction: "Eres un profesor de autoescuela español experto en el Reglamento General de Circulación. Responde de forma didáctica, usando ejemplos claros. Si te preguntan algo fuera del contexto de conducir o tráfico, indica amablemente que solo respondes dudas de vialidad.",
+        systemInstruction: "Eres Skily Knowledge Engine. Tu objetivo es proporcionar definiciones exactas y normas de tráfico DGT (España). NO converses. Si el usuario pregunta 'velocidad autopista', responde: 'Turismos y motocicletas: 120 km/h. Autobuses: 100 km/h.'. Sé extremadamente breve, usa formato Markdown simple. Si la pregunta no es sobre tráfico, di: 'Error: Tema fuera de base de datos vial.'",
       }
     });
-    return response.text || "Sin respuesta.";
+    return response.text || "Sin respuesta del núcleo.";
   } catch (error) {
     console.error(error);
-    return "Error de conexión con el tutor.";
+    return "Error de conexión: Núcleo IA desconectado.";
   }
 };
 

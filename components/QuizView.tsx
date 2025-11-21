@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { CheckCircle, XCircle, ChevronRight, HelpCircle, Play, ArrowRight } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, XCircle, HelpCircle, ArrowRight } from 'lucide-react';
 import { Question, Topic } from '../types';
 import { getExplanation, generateQuizQuestion } from '../services/geminiService';
 
 interface QuizViewProps {
   onComplete: (score: number) => void;
+  topic: Topic;
 }
 
-export const QuizView: React.FC<QuizViewProps> = ({ onComplete }) => {
-  const [gameState, setGameState] = useState<'menu' | 'playing'>('menu');
-  const [selectedTopic, setSelectedTopic] = useState<Topic>(Topic.GENERAL);
+export const QuizView: React.FC<QuizViewProps> = ({ onComplete, topic }) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
@@ -21,12 +21,9 @@ export const QuizView: React.FC<QuizViewProps> = ({ onComplete }) => {
   
   const MAX_QUESTIONS = 5;
 
-  const startQuiz = () => {
-    setGameState('playing');
-    setQuestionCount(0);
-    setScore(0);
+  useEffect(() => {
     loadNextQuestion();
-  };
+  }, []);
 
   const loadNextQuestion = async () => {
     setIsLoadingQuestion(true);
@@ -35,7 +32,7 @@ export const QuizView: React.FC<QuizViewProps> = ({ onComplete }) => {
     setIsConfirmed(false);
     setAiExplanation(null);
 
-    const question = await generateQuizQuestion(selectedTopic);
+    const question = await generateQuizQuestion(topic);
     
     if (question) {
       setCurrentQuestion(question);
@@ -73,63 +70,23 @@ export const QuizView: React.FC<QuizViewProps> = ({ onComplete }) => {
     }
   };
 
-  if (gameState === 'menu') {
-    return (
-      <div className="max-w-4xl mx-auto p-6 md:p-12">
-        <div className="text-center mb-12 space-y-4">
-          <h2 className="text-3xl font-bold text-slate-900">Simulacro de Examen</h2>
-          <p className="text-slate-500 max-w-xl mx-auto">
-            Selecciona un tema específico o practica con preguntas generales. 
-            Nuestra IA genera preguntas únicas basadas en la normativa vigente.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-          {Object.values(Topic).map((topic) => (
-            <button
-              key={topic}
-              onClick={() => setSelectedTopic(topic)}
-              className={`p-4 rounded-xl border text-left transition-all ${
-                selectedTopic === topic
-                  ? 'border-brand-500 bg-brand-50 text-brand-700 ring-2 ring-brand-500/20 shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:bg-slate-50'
-              }`}
-            >
-              <span className="font-semibold block">{topic}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="flex justify-center">
-           <button 
-              onClick={startQuiz}
-              className="px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-lg shadow-xl transition-all flex items-center gap-3"
-            >
-              <Play size={20} fill="currentColor" />
-              <span>Comenzar Simulación</span>
-            </button>
-        </div>
-      </div>
-    );
-  }
-
   if (isLoadingQuestion) {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-4 border-brand-100 border-t-brand-600 rounded-full animate-spin mb-6"></div>
-        <h3 className="text-lg font-medium text-slate-900">Generando pregunta...</h3>
-        <p className="text-slate-500 text-sm">Consultando base de datos DGT</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
+        <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
+        <h3 className="text-xl font-bold text-slate-900">Cargando pregunta...</h3>
+        <p className="text-slate-500">Generando contenido oficial DGT</p>
       </div>
     );
   }
 
   if (!currentQuestion) {
     return (
-      <div className="max-w-xl mx-auto p-8 text-center">
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-           <h3 className="text-xl font-bold text-slate-900 mb-2">Error de Carga</h3>
-           <p className="text-slate-500 mb-6">No se pudo generar la pregunta. Inténtalo de nuevo.</p>
-           <button onClick={() => setGameState('menu')} className="px-6 py-2 bg-slate-900 text-white rounded-lg">Volver al Menú</button>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 text-center max-w-md">
+           <h3 className="text-xl font-bold text-slate-900 mb-2">Error de Conexión</h3>
+           <p className="text-slate-500 mb-6">No se pudo conectar con el servidor de preguntas.</p>
+           <button onClick={() => onComplete(0)} className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold">Volver</button>
         </div>
       </div>
     );
@@ -138,129 +95,139 @@ export const QuizView: React.FC<QuizViewProps> = ({ onComplete }) => {
   const progress = ((questionCount + 1) / MAX_QUESTIONS) * 100;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 md:p-8 pb-24">
-      
-      {/* Progress Header */}
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pregunta {questionCount + 1} de {MAX_QUESTIONS}</span>
-        <span className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold text-slate-600">{currentQuestion.topic}</span>
-      </div>
-      
-      <div className="w-full bg-slate-100 rounded-full h-2 mb-8">
-        <div className="bg-brand-600 h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
-      </div>
-
-      {/* Card Container */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] p-6 flex justify-center">
+      <div className="w-full max-w-3xl pt-10">
         
-        <div className="p-8 border-b border-slate-100">
-          <h2 className="text-xl md:text-2xl font-bold text-slate-900 leading-snug">
-            {currentQuestion.text}
-          </h2>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+             <span className="text-xs font-bold uppercase tracking-wider text-indigo-500 block mb-1">Modo Examen</span>
+             <h2 className="text-2xl font-bold text-slate-900">{topic}</h2>
+          </div>
+          <div className="flex items-center gap-2 text-slate-400 text-sm font-mono">
+            <span>{questionCount + 1}</span>
+            <span className="opacity-30">/</span>
+            <span>{MAX_QUESTIONS}</span>
+          </div>
+        </div>
+        
+        <div className="w-full bg-slate-200 rounded-full h-1.5 mb-10 overflow-hidden">
+          <div className="bg-indigo-600 h-full rounded-full transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
         </div>
 
-        <div className="p-8 space-y-3">
-          {currentQuestion.options.map((option, idx) => {
-            let buttonClass = "border-slate-200 hover:bg-slate-50 text-slate-700";
-            
-            if (selectedOption === idx && !isConfirmed) {
-              buttonClass = "border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-500";
-            }
+        {/* Question Card */}
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-indigo-500/5 border border-slate-100 overflow-hidden relative">
+          
+          <div className="p-8 md:p-10 border-b border-slate-50">
+            <h3 className="text-xl md:text-2xl font-bold text-slate-800 leading-snug">
+              {currentQuestion.text}
+            </h3>
+          </div>
 
-            if (isConfirmed) {
-              if (idx === currentQuestion.correctIndex) {
-                buttonClass = "border-emerald-500 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-500";
-              } else if (idx === selectedOption) {
-                buttonClass = "border-rose-500 bg-rose-50 text-rose-800 ring-1 ring-rose-500";
-              } else {
-                buttonClass = "border-slate-100 text-slate-400 opacity-60";
+          <div className="p-8 md:p-10 space-y-4">
+            {currentQuestion.options.map((option, idx) => {
+              let stateClass = "border-slate-100 hover:bg-slate-50 hover:border-indigo-200";
+              
+              if (selectedOption === idx && !isConfirmed) {
+                stateClass = "border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500";
               }
-            }
 
-            return (
-              <button
-                key={idx}
-                onClick={() => !isConfirmed && setSelectedOption(idx)}
-                disabled={isConfirmed}
-                className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-4 ${buttonClass}`}
-              >
-                <div className={`mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                   isConfirmed && idx === currentQuestion.correctIndex ? 'border-emerald-500 bg-emerald-500 text-white' :
-                   isConfirmed && idx === selectedOption ? 'border-rose-500 bg-rose-500 text-white' :
-                   'border-current'
-                }`}>
-                   {String.fromCharCode(65 + idx)}
-                </div>
-                <span className="font-medium">{option}</span>
-                
-                {isConfirmed && idx === currentQuestion.correctIndex && <CheckCircle size={20} className="ml-auto text-emerald-600" />}
-                {isConfirmed && idx === selectedOption && idx !== currentQuestion.correctIndex && <XCircle size={20} className="ml-auto text-rose-600" />}
-              </button>
-            );
-          })}
-        </div>
-        
-        {/* Feedback Section */}
-        {isConfirmed && (
-          <div className="bg-slate-50 p-8 border-t border-slate-100 animate-fade-in">
-             
-             {/* Official Explanation */}
-             {currentQuestion.explanation && !aiExplanation && !isLoadingExplanation && (
-                <div className="mb-6">
-                   <div className="flex items-center gap-2 mb-2 text-slate-900 font-bold">
-                     <HelpCircle size={18} />
-                     <h4>Explicación</h4>
-                   </div>
-                   <p className="text-slate-600 text-sm leading-relaxed">{currentQuestion.explanation}</p>
-                </div>
-             )}
+              if (isConfirmed) {
+                if (idx === currentQuestion.correctIndex) {
+                  stateClass = "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500";
+                } else if (idx === selectedOption) {
+                  stateClass = "border-rose-500 bg-rose-50 ring-1 ring-rose-500";
+                } else {
+                  stateClass = "border-slate-100 opacity-50";
+                }
+              }
 
-             {/* AI Explanation */}
-             {isLoadingExplanation && (
-                <div className="flex items-center gap-3 text-brand-600 mb-6">
-                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                   <span className="text-sm font-medium">El tutor IA está ampliando la respuesta...</span>
-                </div>
-             )}
-
-             {aiExplanation && (
-               <div className="bg-white p-5 rounded-xl border border-brand-100 shadow-sm mb-6">
-                  <div className="flex items-center gap-2 mb-2 text-brand-700 font-bold text-sm uppercase tracking-wide">
-                     <span>Tutor IA</span>
+              return (
+                <button
+                  key={idx}
+                  onClick={() => !isConfirmed && setSelectedOption(idx)}
+                  disabled={isConfirmed}
+                  className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-start gap-4 group ${stateClass}`}
+                >
+                  <div className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 text-[10px] font-bold transition-colors ${
+                     isConfirmed && idx === currentQuestion.correctIndex ? 'border-emerald-500 bg-emerald-500 text-white' :
+                     isConfirmed && idx === selectedOption ? 'border-rose-500 bg-rose-500 text-white' :
+                     selectedOption === idx ? 'border-indigo-500 text-indigo-600' : 'border-slate-300 text-slate-400'
+                  }`}>
+                     {String.fromCharCode(65 + idx)}
                   </div>
-                  <p className="text-slate-700 text-sm leading-relaxed">{aiExplanation}</p>
+                  <span className={`font-medium text-lg ${isConfirmed && idx === currentQuestion.correctIndex ? 'text-emerald-900' : 'text-slate-700'}`}>
+                    {option}
+                  </span>
+                  
+                  {isConfirmed && idx === currentQuestion.correctIndex && <CheckCircle size={24} className="ml-auto text-emerald-500" />}
+                  {isConfirmed && idx === selectedOption && idx !== currentQuestion.correctIndex && <XCircle size={24} className="ml-auto text-rose-500" />}
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Explanation Footer */}
+          {isConfirmed && (
+            <div className="bg-slate-50 p-8 md:p-10 animate-fade-in border-t border-slate-100">
+               
+               {currentQuestion.explanation && !aiExplanation && !isLoadingExplanation && (
+                  <div className="mb-6">
+                     <div className="flex items-center gap-2 mb-2 text-slate-900 font-bold uppercase text-xs tracking-wider">
+                       <HelpCircle size={14} />
+                       <span>Explicación Oficial</span>
+                     </div>
+                     <p className="text-slate-600 leading-relaxed">{currentQuestion.explanation}</p>
+                  </div>
+               )}
+
+               {isLoadingExplanation && (
+                  <div className="flex items-center gap-3 text-indigo-600 mb-6 bg-indigo-50 p-4 rounded-xl">
+                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                     <span className="text-sm font-medium">Skily AI está analizando tu respuesta...</span>
+                  </div>
+               )}
+
+               {aiExplanation && (
+                 <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm mb-8 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                    <div className="flex items-center gap-2 mb-3 text-indigo-600 font-bold text-xs uppercase tracking-widest">
+                       <span>Skily Tutor</span>
+                    </div>
+                    <p className="text-slate-800 leading-relaxed">{aiExplanation}</p>
+                 </div>
+               )}
+
+               <div className="flex justify-end">
+                 <button
+                   onClick={handleNext}
+                   className="px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold shadow-xl shadow-slate-900/10 hover:shadow-slate-900/20 transition-all hover:-translate-y-1 flex items-center gap-3"
+                 >
+                   <span>{questionCount < MAX_QUESTIONS - 1 ? 'Siguiente' : 'Finalizar'}</span>
+                   <ArrowRight size={20} />
+                 </button>
                </div>
-             )}
+            </div>
+          )}
 
-             <div className="flex justify-end">
-               <button
-                 onClick={handleNext}
-                 className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold shadow-lg transition-transform hover:-translate-y-0.5 flex items-center gap-2"
-               >
-                 <span>{questionCount < MAX_QUESTIONS - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'}</span>
-                 <ArrowRight size={18} />
-               </button>
-             </div>
-          </div>
-        )}
+          {/* Floating Confirm Action */}
+          {!isConfirmed && (
+            <div className="absolute bottom-8 right-8 md:bottom-10 md:right-10">
+              <button
+                onClick={handleConfirm}
+                disabled={selectedOption === null}
+                className={`px-8 py-4 rounded-2xl font-bold text-white transition-all shadow-lg ${
+                  selectedOption === null 
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed translate-y-2 opacity-0' 
+                    : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/30 translate-y-0 opacity-100'
+                }`}
+              >
+                Confirmar Respuesta
+              </button>
+            </div>
+          )}
 
-        {/* Confirm Button (Before Confirmation) */}
-        {!isConfirmed && (
-          <div className="p-8 pt-0 flex justify-end">
-            <button
-              onClick={handleConfirm}
-              disabled={selectedOption === null}
-              className={`px-8 py-3 rounded-xl font-bold text-white transition-all ${
-                selectedOption === null 
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
-                  : 'bg-brand-600 hover:bg-brand-700 shadow-md'
-              }`}
-            >
-              Confirmar
-            </button>
-          </div>
-        )}
-
+        </div>
       </div>
     </div>
   );

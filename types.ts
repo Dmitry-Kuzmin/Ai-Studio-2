@@ -1,11 +1,18 @@
+
 export enum Topic {
   GENERAL = 'General',
   SENALES = 'Señales',
   VELOCIDAD = 'Velocidad',
   PRIORIDAD = 'Prioridad',
   SEGURIDAD = 'Seguridad Vial',
-  ALCOHOL_DROGAS = 'Alcohol y Drogas'
+  ALCOHOL_DROGAS = 'Alcohol y Drogas',
+  DOCUMENTACION = 'Documentación',
+  PRIMEROS_AUXILIOS = 'Primeros Auxilios',
+  MECANICA = 'Mecánica',
+  CONDUCCION_EFICIENTE = 'Conducción Eficiente'
 }
+
+export type ViewState = 'dashboard' | 'tests' | 'quiz';
 
 export interface Question {
   id: number;
@@ -14,13 +21,13 @@ export interface Question {
   imageUrl?: string;
   options: string[];
   correctIndex: number;
-  explanation?: string; // Pre-defined explanation
+  explanation?: string; 
 }
 
 export interface QuizState {
   currentQuestionIndex: number;
   score: number;
-  answers: (number | null)[]; // Index of selected answer per question
+  answers: (number | null)[]; 
   isFinished: boolean;
 }
 
@@ -28,12 +35,12 @@ export interface UserStats {
   testsTaken: number;
   averageScore: number;
   topicMastery: {
-    [key in Topic]: number; // 0-100 percentage
+    [key in Topic]?: number;
   };
-  // New gamification stats
   currentStreak: number;
   maxStreak: number;
   xp: number;
   level: number;
-  lastRewardClaimed?: string; // ISO Date string
+  lastRewardClaimed?: string;
+  currentSkin: string;
 }
