@@ -12,7 +12,7 @@ export enum Topic {
   CONDUCCION_EFICIENTE = 'Conducción Eficiente'
 }
 
-export type ViewState = 'dashboard' | 'tests' | 'quiz';
+export type ViewState = 'landing' | 'dashboard' | 'tests' | 'quiz' | 'tutor' | 'settings';
 
 export interface Question {
   id: number;

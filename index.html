@@ -36,6 +36,7 @@
               'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite',
               'orbit': 'orbit 8s linear infinite',
               'twinkle': 'twinkle 3s ease-in-out infinite',
+              'equalizer': 'equalizer 1s ease-in-out infinite',
             },
             keyframes: {
               fadeIn: {
@@ -87,6 +88,10 @@
               twinkle: {
                 '0%, 100%': { opacity: '0.2', transform: 'scale(0.8)' },
                 '50%': { opacity: '1', transform: 'scale(1.2)' }
+              },
+              equalizer: {
+                '0%, 100%': { height: '20%' },
+                '50%': { height: '100%' }
               }
             }
           }

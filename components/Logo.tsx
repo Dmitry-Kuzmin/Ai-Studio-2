@@ -10,33 +10,44 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({ className = "", showText = true, theme = 'dark' }) => {
   const textColor = theme === 'light' ? 'text-white' : 'text-slate-900';
   const primaryFill = theme === 'light' ? '#ffffff' : '#4f46e5'; // White or Indigo 600
+  const secondaryFill = theme === 'light' ? 'rgba(255,255,255,0.5)' : '#818cf8'; // Transparent White or Indigo 400
   
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <div className="relative w-8 h-8 flex-shrink-0">
-        {/* New Logo: 'The Spark' - Sharp, Compact, Memorable */}
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-sm">
-          {/* Upper Spark */}
+    <div className={`flex items-center gap-3 ${className}`}>
+      <div className="relative w-10 h-10 flex-shrink-0">
+        {/* New Logo: 'The Razor' - Aggressive, Aerodynamic, Cyber-Tech */}
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-lg">
+          
+          {/* Upper Blade (Fast Forward) */}
           <path 
-            d="M55 10 L 85 10 C 90 10 92 15 88 20 L 50 65 L 55 45 L 55 10 Z" 
+            d="M 40 10 L 90 10 L 75 50 L 25 50 Z" 
             fill={primaryFill}
+            transform="skewX(-10)"
           />
-          {/* Lower Spark (Offset) */}
+          
+          {/* Lower Blade (Reaction) */}
           <path 
-            d="M45 90 L 15 90 C 10 90 8 85 12 80 L 50 35 L 45 55 L 45 90 Z" 
-            fill={theme === 'light' ? '#818cf8' : '#1e293b'} 
+            d="M 10 90 L 60 90 L 75 50 L 25 50 Z" 
+            fill={secondaryFill}
+            transform="skewX(-10)"
           />
+
+          {/* Speed Line Cut (Negative Space Detail) */}
+          <rect x="45" y="48" width="10" height="4" fill={theme === 'light' ? '#4f46e5' : '#0f172a'} transform="skewX(-10)" />
         </svg>
       </div>
       
       {showText && (
-        <div className="flex flex-col justify-center -space-y-1">
-          <span className={`text-lg font-extrabold tracking-tighter ${textColor} font-sans`}>
+        <div className="flex flex-col justify-center">
+          <span className={`text-xl font-extrabold tracking-tighter leading-none ${textColor} font-sans`}>
             Skily
           </span>
-          <span className={`text-[8px] font-bold uppercase tracking-[0.3em] ${theme === 'light' ? 'text-indigo-200' : 'text-indigo-500'}`}>
-            App
-          </span>
+          <div className="flex items-center gap-1">
+            <div className={`h-[2px] w-3 ${theme === 'light' ? 'bg-indigo-300' : 'bg-indigo-500'}`}></div>
+            <span className={`text-[9px] font-bold uppercase tracking-[0.2em] ${theme === 'light' ? 'text-indigo-200' : 'text-indigo-500'}`}>
+              Global
+            </span>
+          </div>
         </div>
       )}
     </div>

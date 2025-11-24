@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Zap, BookOpen, AlertTriangle, Clock, Car, Shield, Heart, Wrench, Leaf, FileText } from 'lucide-react';
 import { Topic, UserStats } from '../types';
 import { playClickSound, playHoverSound } from '../services/audioService';
+import { MusicPlayer } from './MusicPlayer';
 
 interface TestsViewProps {
   onBack: () => void;
@@ -33,7 +34,7 @@ export const TestsView: React.FC<TestsViewProps> = ({ onBack, onSelectTopic, sta
 
       <div className="relative z-10 max-w-[1370px] mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
           <button 
             onClick={() => { playClickSound(); onBack(); }}
             className="group flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-600 transition-all shadow-lg shadow-black/20"
@@ -42,19 +43,24 @@ export const TestsView: React.FC<TestsViewProps> = ({ onBack, onSelectTopic, sta
             <span className="font-bold text-sm tracking-wide">DASHBOARD</span>
           </button>
           
-          <div className="flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
-             <button 
-               onClick={() => { playClickSound(); setMode('practice'); }}
-               className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all tracking-wide ${mode === 'practice' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
-             >
-               Entrenamiento
-             </button>
-             <button 
-               onClick={() => { playClickSound(); setMode('exam'); }}
-               className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all tracking-wide ${mode === 'exam' ? 'bg-rose-600 text-white shadow-lg shadow-rose-900/50' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
-             >
-               Examen DGT
-             </button>
+          <div className="flex items-center gap-6">
+             {/* Music Player Widget */}
+             <MusicPlayer />
+             
+             <div className="flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+               <button 
+                 onClick={() => { playClickSound(); setMode('practice'); }}
+                 className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all tracking-wide ${mode === 'practice' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
+               >
+                 Entrenamiento
+               </button>
+               <button 
+                 onClick={() => { playClickSound(); setMode('exam'); }}
+                 className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all tracking-wide ${mode === 'exam' ? 'bg-rose-600 text-white shadow-lg shadow-rose-900/50' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
+               >
+                 Examen DGT
+               </button>
+             </div>
           </div>
         </div>
 
@@ -86,8 +92,6 @@ export const TestsView: React.FC<TestsViewProps> = ({ onBack, onSelectTopic, sta
             const Icon = config.icon;
             const mastery = stats.topicMastery[topic] || 0;
             
-            // Map internal color names to tailwind classes manually to ensure dark mode compatibility
-            // Using a consistent mapping strategy for dynamic classes
             let colorStyles = {
               bg: 'bg-indigo-500/10', text: 'text-indigo-400', bar: 'bg-indigo-500', border: 'group-hover:border-indigo-500/50', glow: 'group-hover:shadow-indigo-500/20'
             };

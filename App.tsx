@@ -4,6 +4,10 @@ import { Dashboard } from './components/Dashboard';
 import { WelcomeOverlay } from './components/WelcomeOverlay';
 import { TestsView } from './components/TestsView';
 import { QuizView } from './components/QuizView';
+import { LandingView } from './components/LandingView';
+import { Sidebar } from './components/Sidebar';
+import { TutorView } from './components/TutorView';
+import { SettingsView } from './components/SettingsView';
 import { UserStats, Topic, ViewState } from './types';
 
 // Initial stats
@@ -33,7 +37,7 @@ const INITIAL_STATS: UserStats = {
 const App: React.FC = () => {
   const [stats, setStats] = useState<UserStats>(INITIAL_STATS);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [currentView, setCurrentView] = useState<ViewState>('dashboard');
+  const [currentView, setCurrentView] = useState<ViewState>('landing');
   const [selectedQuizTopic, setSelectedQuizTopic] = useState<Topic | null>(null);
 
   // Prevent scrolling when welcome overlay is active
@@ -84,37 +88,81 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
+  // Flow: Welcome -> Landing -> Dashboard
+  const handleWelcomeComplete = () => {
+    setShowWelcome(false);
+    setCurrentView('landing');
+  };
+
+  const handleEnterApp = () => {
+    setCurrentView('dashboard');
+    window.scrollTo(0, 0);
+  };
+
+  const handleSidebarNav = (tab: string) => {
+    if (tab === 'dashboard') setCurrentView('dashboard');
+    else if (tab === 'tests') setCurrentView('tests');
+    else if (tab === 'tutor') setCurrentView('tutor');
+    else if (tab === 'settings') setCurrentView('settings');
+    
+    window.scrollTo(0, 0);
+  };
+
   return (
     <>
       {showWelcome && (
-        <WelcomeOverlay onComplete={() => setShowWelcome(false)} />
+        <WelcomeOverlay onComplete={handleWelcomeComplete} />
       )}
       
-      <div className={`min-h-screen bg-[#F8FAFC] flex justify-center font-sans ${showWelcome ? 'blur-sm' : ''} transition-all duration-700`}>
-        <div className="w-full max-w-[1370px]">
+      <div className={`min-h-screen bg-[#0f172a] font-sans ${showWelcome ? 'blur-sm' : ''} transition-all duration-700`}>
+        
+        {/* Sidebar Navigation (Visible only after landing) */}
+        {!showWelcome && currentView !== 'landing' && (
+          <Sidebar activeTab={currentView} setActiveTab={handleSidebarNav} />
+        )}
+
+        <div className={`w-full transition-all duration-300 ${!showWelcome && currentView !== 'landing' ? 'md:pl-72' : ''}`}>
           
+          {currentView === 'landing' && (
+            <LandingView onEnterApp={handleEnterApp} />
+          )}
+
           {currentView === 'dashboard' && (
-            <Dashboard 
-              stats={stats} 
-              onStartQuiz={navigateToTests} 
-              onClaimReward={handleClaimReward}
-              onSkinChange={handleSkinChange}
-            />
+            <div className="max-w-[1370px] mx-auto">
+              <Dashboard 
+                stats={stats} 
+                onStartQuiz={navigateToTests} 
+                onClaimReward={handleClaimReward}
+                onSkinChange={handleSkinChange}
+              />
+            </div>
           )}
 
           {currentView === 'tests' && (
-            <TestsView 
-              onBack={() => setCurrentView('dashboard')}
-              onSelectTopic={startTopicQuiz}
-              stats={stats}
-            />
+            <div className="max-w-[1370px] mx-auto">
+              <TestsView 
+                onBack={() => setCurrentView('dashboard')}
+                onSelectTopic={startTopicQuiz}
+                stats={stats}
+              />
+            </div>
           )}
 
           {currentView === 'quiz' && (
-            <QuizView 
-              onComplete={handleQuizComplete}
-              topic={selectedQuizTopic || Topic.GENERAL}
-            />
+            <div className="max-w-[1370px] mx-auto">
+              <QuizView 
+                onComplete={handleQuizComplete}
+                topic={selectedQuizTopic || Topic.GENERAL}
+              />
+            </div>
+          )}
+
+          {currentView === 'tutor' && (
+             <TutorView />
+          )}
+
+          {currentView === 'settings' && (
+             <SettingsView onBack={() => setCurrentView('dashboard')} />
           )}
 
         </div>
